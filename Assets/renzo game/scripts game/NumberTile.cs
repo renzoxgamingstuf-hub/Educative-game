@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using System.Collections;
 
-public class NumberTile : MonoBehaviour
+public class NumberTile : MonoBehaviour, IPointerClickHandler
 {
     public int number;
     public Image image;
@@ -24,7 +25,7 @@ public class NumberTile : MonoBehaviour
         }
     }
 
-    public void OnClick()
+    public void OnPointerClick(PointerEventData eventData)
     {
         gameManager.OnTileClicked(number);
     }
