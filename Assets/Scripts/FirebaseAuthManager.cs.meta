@@ -1,0 +1,8 @@
+fileFormatVersion: 2
+guid: f0e1d2c3b4a5968776655443322110ab
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  m_AssemblyName: Assembly-CSharp
+  m_ScriptClassName: FirebaseAuthManager
+  m_EditorClassIdentifier: 
