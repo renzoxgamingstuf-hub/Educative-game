@@ -62,6 +62,15 @@
         "*.prefab": "yaml",
         "*.unity": "yaml"
     },
+    "yaml.customTags": [
+        "!u!1",
+        "!u!4",
+        "!u!20",
+        "!u!28",
+        "!u!114",
+        "!u!224",
+        "!u!-\\d+"
+    ],
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
         "*.sln": "*.csproj",
