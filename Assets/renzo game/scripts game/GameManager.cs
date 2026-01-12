@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
 {
     public List<int> sequence = new List<int>();     // correct order
     public List<int> playerInput = new List<int>();  // what player clicks
+    public List<char> operations = new List<char>();  // operators between sequence numbers
     public int sequenceLength = 3;                   // increases over time
     public bool isShowingSequence;
     public bool isWaitingForMathAnswer = false;      // waiting for math answer
@@ -34,6 +35,45 @@ public class GameManager : MonoBehaviour
             {
                 sequence.Add(randomNumber);
                 usedNumbers.Add(randomNumber);
+            }
+        }
+
+        // Generate operators for the expression between numbers
+        operations.Clear();
+        if (sequence.Count > 1)
+        {
+            int temp = sequence[0];
+            for (int i = 1; i < sequence.Count; i++)
+            {
+                int num = sequence[i];
+                char op;
+
+                // Try to pick division only when divisible, otherwise pick +, *, or -
+                int choice = Random.Range(0, 4); // 0: +, 1: *, 2: /, 3: -
+                if (choice == 2 && num != 0 && temp % num == 0)
+                {
+                    op = '/';
+                }
+                else if (choice == 1)
+                {
+                    op = '*';
+                }
+                else if (choice == 3)
+                {
+                    op = '-';
+                }
+                else
+                {
+                    op = '+';
+                }
+
+                operations.Add(op);
+
+                // Apply op to temp so future division checks use updated value (left-to-right)
+                if (op == '+') temp += num;
+                else if (op == '*') temp *= num;
+                else if (op == '-') temp -= num;
+                else if (op == '/') temp /= num;
             }
         }
     }
@@ -70,6 +110,13 @@ public class GameManager : MonoBehaviour
         if (isShowingSequence) return;
         if (isWaitingForMathAnswer) return;  // Don't click tiles while doing math
 
+        // Highlight the clicked tile
+        NumberTile clickedTile = FindTile(number);
+        if (clickedTile != null)
+        {
+            clickedTile.Highlight();
+        }
+
         playerInput.Add(number);
 
         // Check if player clicked wrong tile
@@ -89,20 +136,66 @@ public class GameManager : MonoBehaviour
 
     int CalculateCorrectAnswer()
     {
-        int result = sequence[0];
+        if (sequence == null || sequence.Count == 0) return 0;
+        if (sequence.Count == 1) return sequence[0];
 
-        for (int i = 1; i < sequence.Count; i++)
+        // Build list of values and operators for order of operations
+        List<int> values = new List<int>(sequence);
+        List<char> ops = new List<char>(operations);
+
+        // First pass: handle * and / (left to right)
+        for (int i = 0; i < ops.Count; i++)
         {
-            result += sequence[i]; // start simple (addition)
+            if (ops[i] == '*' || ops[i] == '/')
+            {
+                int result;
+                if (ops[i] == '*')
+                {
+                    result = values[i] * values[i + 1];
+                }
+                else // division
+                {
+                    if (values[i + 1] != 0)
+                        result = values[i] / values[i + 1];
+                    else
+                        result = 0;
+                }
+                // Replace values[i] with result and remove values[i+1] and ops[i]
+                values[i] = result;
+                values.RemoveAt(i + 1);
+                ops.RemoveAt(i);
+                i--; // Back up to check the next operator after replacement
+            }
         }
 
-        return result;
+        // Second pass: handle + and - (left to right)
+        int finalResult = values[0];
+        for (int i = 0; i < ops.Count; i++)
+        {
+            if (ops[i] == '+')
+                finalResult += values[i + 1];
+            else if (ops[i] == '-')
+                finalResult -= values[i + 1];
+        }
+
+        return finalResult;
     }
 
     void ShowMathProblem()
     {
         isWaitingForMathAnswer = true;
-        string problem = string.Join(" + ", sequence) + " = ?";
+        // Build problem string including operators
+        string problem = "";
+        if (sequence.Count > 0)
+        {
+            problem += sequence[0].ToString();
+            for (int i = 1; i < sequence.Count; i++)
+            {
+                char op = (i - 1) < operations.Count ? operations[i - 1] : '+';
+                problem += " " + op + " " + sequence[i].ToString();
+            }
+            problem += " = ?";
+        }
         if (mathProblemText != null)
         {
             mathProblemText.text = problem;
@@ -145,6 +238,7 @@ public class GameManager : MonoBehaviour
     {
         sequenceLength = 3;
         level = 1;
+        operations.Clear();
         StartCoroutine(DelayedNextRound());
     }
 
@@ -179,6 +273,7 @@ public class GameManager : MonoBehaviour
         UpdateLevelDisplay();
         GenerateSequence();
         StartCoroutine(PlaySequence());
-        answerInput.text = "";
+        if (answerInput != null) answerInput.text = "";
+        if (mathProblemText != null) mathProblemText.text = "";
     }
 }
