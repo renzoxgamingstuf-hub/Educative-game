@@ -7,6 +7,6 @@ public class UISetupHelper : MonoBehaviour
 
     void Start()
     {
-        inputField.contentType = TMP_InputField.ContentType.IntegerNumber;
+        inputField.contentType = TMP_InputField.ContentType.DecimalNumber;
     }
 }

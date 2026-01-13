@@ -25,57 +25,55 @@ public class GameManager : MonoBehaviour
 
     void GenerateSequence()
     {
-        sequence.Clear();
-        HashSet<int> usedNumbers = new HashSet<int>();
-
-        while (sequence.Count < sequenceLength)
+        do
         {
-            int randomNumber = Random.Range(1, 10); // 1–9
-            if (!usedNumbers.Contains(randomNumber))
+            sequence.Clear();
+
+            for (int i = 0; i < sequenceLength; i++)
             {
+                int randomNumber = Random.Range(1, 10); // 1–9
                 sequence.Add(randomNumber);
-                usedNumbers.Add(randomNumber);
             }
-        }
 
-        // Generate operators for the expression between numbers
-        operations.Clear();
-        if (sequence.Count > 1)
-        {
-            int temp = sequence[0];
-            for (int i = 1; i < sequence.Count; i++)
+            // Generate operators for the expression between numbers
+            operations.Clear();
+            if (sequence.Count > 1)
             {
-                int num = sequence[i];
-                char op;
+                float temp = (float)sequence[0];
+                for (int i = 1; i < sequence.Count; i++)
+                {
+                    float num = (float)sequence[i];
+                    char op;
 
-                // Try to pick division only when divisible, otherwise pick +, *, or -
-                int choice = Random.Range(0, 4); // 0: +, 1: *, 2: /, 3: -
-                if (choice == 2 && num != 0 && temp % num == 0)
-                {
-                    op = '/';
-                }
-                else if (choice == 1)
-                {
-                    op = '*';
-                }
-                else if (choice == 3)
-                {
-                    op = '-';
-                }
-                else
-                {
-                    op = '+';
-                }
+                    // Try to pick division only when divisible, otherwise pick +, *, or -
+                    int choice = Random.Range(0, 4); // 0: +, 1: *, 2: /, 3: -
+                    if (choice == 2 && num != 0 && temp % num == 0)
+                    {
+                        op = '/';
+                    }
+                    else if (choice == 1)
+                    {
+                        op = '*';
+                    }
+                    else if (choice == 3)
+                    {
+                        op = '-';
+                    }
+                    else
+                    {
+                        op = '+';
+                    }
 
-                operations.Add(op);
+                    operations.Add(op);
 
-                // Apply op to temp so future division checks use updated value (left-to-right)
-                if (op == '+') temp += num;
-                else if (op == '*') temp *= num;
-                else if (op == '-') temp -= num;
-                else if (op == '/') temp /= num;
+                    // Apply op to temp so future division checks use updated value (left-to-right)
+                    if (op == '+') temp += num;
+                    else if (op == '*') temp *= num;
+                    else if (op == '-') temp -= num;
+                    else if (op == '/') temp /= num;
+                }
             }
-        }
+        } while (CalculateCorrectAnswer() < 0);
     }
 
     IEnumerator PlaySequence()
@@ -134,13 +132,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    int CalculateCorrectAnswer()
+    float CalculateCorrectAnswer()
     {
-        if (sequence == null || sequence.Count == 0) return 0;
-        if (sequence.Count == 1) return sequence[0];
+        if (sequence == null || sequence.Count == 0) return 0f;
+        if (sequence.Count == 1) return (float)sequence[0];
 
         // Build list of values and operators for order of operations
-        List<int> values = new List<int>(sequence);
+        List<float> values = new List<float>();
+        foreach (int num in sequence) values.Add((float)num);
         List<char> ops = new List<char>(operations);
 
         // First pass: handle * and / (left to right)
@@ -148,7 +147,7 @@ public class GameManager : MonoBehaviour
         {
             if (ops[i] == '*' || ops[i] == '/')
             {
-                int result;
+                float result;
                 if (ops[i] == '*')
                 {
                     result = values[i] * values[i + 1];
@@ -169,7 +168,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Second pass: handle + and - (left to right)
-        int finalResult = values[0];
+        float finalResult = values[0];
         for (int i = 0; i < ops.Count; i++)
         {
             if (ops[i] == '+')
@@ -211,16 +210,16 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        int playerAnswer;
-        if (!int.TryParse(answerInput.text, out playerAnswer))
+        float playerAnswer;
+        if (!float.TryParse(answerInput.text, out playerAnswer))
         {
             ShowFeedback("Please enter a number.");
             return;
         }
 
-        int correctAnswer = CalculateCorrectAnswer();
+        float correctAnswer = CalculateCorrectAnswer();
 
-        if (playerAnswer == correctAnswer)
+        if (Mathf.Approximately(playerAnswer, correctAnswer))
         {
             ShowFeedback("Correct! Level up!");
             sequenceLength++;
