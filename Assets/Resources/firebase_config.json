@@ -1,0 +1,4 @@
+{
+  "webApiKey": "REPLACE_WITH_WEB_API_KEY",
+  "customTokenEndpoint": "http://localhost:5000/createCustomToken"
+}
