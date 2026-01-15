@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 7c0f65e19e9ac4c4cbc8d0d4071861b6
+guid: cff3578347965344ca83c7529ca0f2a0
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4340905209332066121
-    second: pixilart-drawing (36)_0
+      213: -4194210149038598622
+    second: garden-background-pixilart_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,7 +126,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: pixilart-drawing (36)_0
+      name: garden-background-pixilart_0
       rect:
         serializedVersion: 2
         x: 0
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 94761ede94efd3c30800000000000000
-      internalID: 4340905209332066121
+      spriteID: 2265731671c2bc5c0800000000000000
+      internalID: -4194210149038598622
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      pixilart-drawing (36)_0: 4340905209332066121
+      garden-background-pixilart_0: -4194210149038598622
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
