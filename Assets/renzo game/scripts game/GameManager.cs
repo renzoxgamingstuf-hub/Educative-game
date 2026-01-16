@@ -18,6 +18,8 @@ public class GameManager : MonoBehaviour
     public TMP_Text levelText;                       // NEW: display level
     public TMP_InputField answerInput;
     public int level = 1;
+    private int initialLevel = 1;
+    private int renzoprogress = 0;
     private string currentUsername = "";
     private string webApiKey = "AIzaSyB8eX0UcW3z9z9z9z9z9z9z9z9z9z9z9z9"; // Replace with actual key
     private string projectId = "project5-arenanova";
@@ -231,6 +233,7 @@ public class GameManager : MonoBehaviour
             ShowFeedback("Correct! Level up!");
             sequenceLength++;
             level++;
+            CalculateProgress();
             SaveLevelToFirebase();
             StartNextRound();
         }
@@ -239,6 +242,13 @@ public class GameManager : MonoBehaviour
             ShowFeedback("Math answer is wrong. Game Over.");
             ResetGame();
         }
+    }
+
+    void CalculateProgress()
+    {
+        // Calculate renzoprogress as the difference between final level and initial level
+        renzoprogress = level - initialLevel;
+        Debug.Log("[GameManager] Progress calculated: Started at " + initialLevel + ", ended at " + level + ", renzoprogress: " + renzoprogress);
     }
 
     void ResetGame()
@@ -255,6 +265,9 @@ public class GameManager : MonoBehaviour
             level = 1;
             sequenceLength = 3;
         }
+        
+        // Calculate and save progress after level changes
+        CalculateProgress();
         SaveLevelToFirebase();
         operations.Clear();
         StartCoroutine(DelayedNextRound());
@@ -377,6 +390,7 @@ public class GameManager : MonoBehaviour
                                 if (int.TryParse(levelStr, out int loadedLevel))
                                 {
                                     level = loadedLevel;
+                                    initialLevel = loadedLevel;  // Store initial level for progress tracking
                                     sequenceLength = 2 + level;
                                     Debug.Log("[GameManager] Loaded level from Firebase: " + level);
                                 }
@@ -458,12 +472,15 @@ public class GameManager : MonoBehaviour
 
                     Debug.Log("[GameManager] Document name: " + docName);
                     
-                    // Update only the renzolvl field using updateMask
-                    string updateUrl = $"https://firestore.googleapis.com/v1/{docName}?updateMask.fieldPaths=renzolvl&key={webApiKey}";
+                    // Update renzolvl and renzoprogress fields using updateMask
+                    string updateUrl = $"https://firestore.googleapis.com/v1/{docName}?updateMask.fieldPaths=renzolvl&updateMask.fieldPaths=renzoprogress&key={webApiKey}";
                     string updateJson = $@"{{
   ""fields"": {{
     ""renzolvl"": {{
       ""integerValue"": ""{level}""
+    }},
+    ""renzoprogress"": {{
+      ""integerValue"": ""{renzoprogress}""
     }}
   }}
 }}";
@@ -479,11 +496,11 @@ public class GameManager : MonoBehaviour
 
                         if (updateReq.result == UnityWebRequest.Result.Success)
                         {
-                            Debug.Log("[GameManager] Level saved to Firebase: " + level);
+                            Debug.Log("[GameManager] Level and progress saved to Firebase: renzolvl=" + level + ", renzoprogress=" + renzoprogress);
                         }
                         else
                         {
-                            Debug.LogError("[GameManager] Failed to update level: " + updateReq.error);
+                            Debug.LogError("[GameManager] Failed to update level and progress: " + updateReq.error);
                         }
                     }
                 }
